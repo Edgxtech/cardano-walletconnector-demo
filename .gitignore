@@ -1,0 +1,8 @@
+target/
+*.iml
+.idea/
+encrypted.properties
+TIPS.txt
+TODO.txt
+unused/
+src/test/java/EncryptionUtilsTest.java

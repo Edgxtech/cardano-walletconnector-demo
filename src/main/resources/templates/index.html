@@ -1,0 +1,74 @@
+<html xmlns="http://thymeleaf.org">
+
+<head>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet" type="text/css"></link>
+    <link th:href="@{/css/layout.css}" rel="stylesheet" type="text/css"></link>
+</head>
+
+<body>
+    <div class="container">
+
+        <section>
+            <header>
+                <h3>Minimal Spring Application with <a href="https://namiwallet.io">Nami</a> Cardano Wallet Integration</h3>
+            </header>
+        </section>
+
+        <form id="connectForm" class="form-horizontal connectNami" th:action="@{/dappconn/delegator/connect}" method="post">
+            <fieldset>
+                <legend>Connect Wallet</legend>
+                <div class="form-group">
+                    <div class="col-md-4">
+                        <button id="submit_connect" name="submit" class="btn btn-primary">Connect</button>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Payment Address: </strong><small><em id="payment_addr"></em></small><br/>
+                        <strong>Stake Address: </strong><small><em id="stake_addr"></em></small><br/>
+                        <strong>Balance: </strong><small><em id="balance"></em></small><br/>
+                        <strong>#UTXOs: </strong><small><em id="utxos"></em></small><br/>
+                        <strong>Network: </strong><small><em id="network"></em></small><br/>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+
+        <form class="form-horizontal sendFunds" method="post">
+            <fieldset>
+                <legend>Send Funds</legend>
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="receive_address">Receiving Address</label>
+                    <div class="col-md-4">
+                        <input id="receive_address" name="receive_address" type="text" placeholder="addr..." class="form-control input-md" required="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="amount">Amount [Lovelace]</label>
+                    <div class="col-md-4">
+                        <input id="amount" name="amount" type="text" placeholder="1000000" class="form-control input-md" required="" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="submit_send"></label>
+                    <div class="col-md-4">
+                        <button id="submit_send" name="submit" class="btn btn-primary">Sign and Send</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+
+        <textarea rows="25" cols="75" id="console" readonly="true">OUTPUT:</textarea>
+
+        <section>
+            <footer>
+                <p>By AUSST Stakepool <a href="https://ausstaker.com.au">https://ausstaker.com.au</a> <a href="https://twitter.com/ausstaker">@ausstaker</a></p>
+            </footer>
+        </section>
+
+        <script type="text/javascript" th:src="@{/js/lib/jquery-3.1.0.min.js}"></script>
+        <script type="text/javascript" th:src="@{/js/lib/bootstrap.min.js}"></script>
+        <th:block th:replace="dappconnector/dappjs"></th:block>
+    </div>
+
+</body>
+
+</html>
