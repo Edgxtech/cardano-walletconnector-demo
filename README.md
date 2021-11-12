@@ -15,7 +15,7 @@ Minimal Spring Java application that demonstrates integration with the Nami Card
 3. Add a file 'encrypted.properties' to classpath (src/main/resources/)
 ```
 blockfrost.cardano.testnet.project.id=<insert output of EncryptionUtil.encrypt("Blockfrost testnet project_id")>
-blockfrost.cardano.mainnet.project.id=<insert output of EncryptionUtil.encrypt("Blockfrost testnet project_id")>
+blockfrost.cardano.mainnet.project.id=<insert output of EncryptionUtil.encrypt("Blockfrost mainnet project_id")>
 ```
 
 # Simple Funds Transfer Form - Inputs

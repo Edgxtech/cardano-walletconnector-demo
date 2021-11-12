@@ -68,7 +68,7 @@ async function synchWalletInfo() {
 
     //DECODE Balance
     var balance = CBOR.decode(hex2Bytes(encoded_balance).buffer);
-    walletConnection.balance=balance;
+    walletConnection.balance=balance[0];
 
     //DECODE USED Addresses
     var payment_addr = CardanoSerialisationWasm.Address.from_bytes(
