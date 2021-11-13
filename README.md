@@ -1,4 +1,4 @@
-# cardano-dappconnector-testing
+# cardano-walletconnector-demo
 
 # Description
 Minimal Spring Java application that demonstrates integration with the Nami Cardano Wallet. Connects to wallet, builds transaction and seeks user signing to authorise transaction.
