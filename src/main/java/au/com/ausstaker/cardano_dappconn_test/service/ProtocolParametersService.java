@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author timmyedge (https://github.com/Ausstaker)
+ * @author edge2ipi (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 @Service("protocolParametersService")

@@ -3,7 +3,7 @@ package au.com.ausstaker.cardano_dappconn_test.util;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
 
 /**
- * @author timmyedge (https://github.com/Ausstaker)
+ * @author edge2ipi (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 public class EncryptionUtil {

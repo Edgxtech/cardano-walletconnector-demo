@@ -6,7 +6,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 /**
- * @author timmyedge (https://github.com/Ausstaker)
+ * @author edge2ipi (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 @Configuration

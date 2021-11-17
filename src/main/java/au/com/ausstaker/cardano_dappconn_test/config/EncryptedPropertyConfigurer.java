@@ -10,7 +10,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 /**
- * @author timmyedge (https://github.com/Ausstaker)
+ * @author edge2ipi (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 public class EncryptedPropertyConfigurer extends PropertyPlaceholderConfigurer {
