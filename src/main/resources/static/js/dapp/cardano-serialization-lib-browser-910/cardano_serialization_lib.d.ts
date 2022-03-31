@@ -1,6 +1,26 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* @param {Transaction} tx
+* @param {LinearFee} linear_fee
+* @returns {BigNum}
+*/
+export function min_fee(tx: Transaction, linear_fee: LinearFee): BigNum;
+/**
+* @param {string} password
+* @param {string} salt
+* @param {string} nonce
+* @param {string} data
+* @returns {string}
+*/
+export function encrypt_with_password(password: string, salt: string, nonce: string, data: string): string;
+/**
+* @param {string} password
+* @param {string} data
+* @returns {string}
+*/
+export function decrypt_with_password(password: string, data: string): string;
+/**
 * @param {TransactionHash} tx_body_hash
 * @param {ByronAddress} addr
 * @param {LegacyDaedalusPrivateKey} key
@@ -58,26 +78,10 @@ export function get_implicit_input(txbody: TransactionBody, pool_deposit: BigNum
 export function get_deposit(txbody: TransactionBody, pool_deposit: BigNum, key_deposit: BigNum): BigNum;
 /**
 * @param {Value} assets
-* @param {boolean} has_data_hash
-* @param {BigNum} coins_per_utxo_word
+* @param {BigNum} minimum_utxo_val
 * @returns {BigNum}
 */
-export function min_ada_required(assets: Value, has_data_hash: boolean, coins_per_utxo_word: BigNum): BigNum;
-/**
-* Receives a script JSON string
-* and returns a NativeScript.
-* Cardano Wallet and Node styles are supported.
-*
-* * wallet: https://github.com/input-output-hk/cardano-wallet/blob/master/specifications/api/swagger.yaml
-* * node: https://github.com/input-output-hk/cardano-node/blob/master/doc/reference/simple-scripts.md
-*
-* self_xpub is expected to be a Bip32PublicKey as hex-encoded bytes
-* @param {string} json
-* @param {string} self_xpub
-* @param {number} schema
-* @returns {NativeScript}
-*/
-export function encode_json_str_to_native_script(json: string, self_xpub: string, schema: number): NativeScript;
+export function min_ada_required(assets: Value, minimum_utxo_val: BigNum): BigNum;
 /**
 * @param {Uint8Array} bytes
 * @returns {TransactionMetadatum}
@@ -100,26 +104,6 @@ export function encode_json_str_to_metadatum(json: string, schema: number): Tran
 * @returns {string}
 */
 export function decode_metadatum_to_json_str(metadatum: TransactionMetadatum, schema: number): string;
-/**
-* @param {Transaction} tx
-* @param {LinearFee} linear_fee
-* @returns {BigNum}
-*/
-export function min_fee(tx: Transaction, linear_fee: LinearFee): BigNum;
-/**
-* @param {string} password
-* @param {string} salt
-* @param {string} nonce
-* @param {string} data
-* @returns {string}
-*/
-export function encrypt_with_password(password: string, salt: string, nonce: string, data: string): string;
-/**
-* @param {string} password
-* @param {string} data
-* @returns {string}
-*/
-export function decrypt_with_password(password: string, data: string): string;
 /**
 */
 export enum CertificateKind {
@@ -176,55 +160,6 @@ export enum NetworkIdKind {
   Mainnet,
 }
 /**
-* Used to choosed the schema for a script JSON string
-*/
-export enum ScriptSchema {
-  Wallet,
-  Node,
-}
-/**
-*/
-export enum TransactionMetadatumKind {
-  MetadataMap,
-  MetadataList,
-  Int,
-  Bytes,
-  Text,
-}
-/**
-*/
-export enum MetadataJsonSchema {
-  NoConversions,
-  BasicConversions,
-  DetailedSchema,
-}
-/**
-*/
-export enum CoinSelectionStrategyCIP2 {
-/**
-* Performs CIP2's Largest First ada-only selection. Will error if outputs contain non-ADA assets.
-*/
-  LargestFirst,
-/**
-* Performs CIP2's Random Improve ada-only selection. Will error if outputs contain non-ADA assets.
-*/
-  RandomImprove,
-/**
-* Same as LargestFirst, but before adding ADA, will insert by largest-first for each asset type.
-*/
-  LargestFirstMultiAsset,
-/**
-* Same as RandomImprove, but before adding ADA, will insert by random-improve for each asset type.
-*/
-  RandomImproveMultiAsset,
-}
-/**
-*/
-export enum StakeCredKind {
-  Key,
-  Script,
-}
-/**
 */
 export enum LanguageKind {
   PlutusV1,
@@ -245,6 +180,22 @@ export enum RedeemerTagKind {
   Mint,
   Cert,
   Reward,
+}
+/**
+*/
+export enum TransactionMetadatumKind {
+  MetadataMap,
+  MetadataList,
+  Int,
+  Bytes,
+  Text,
+}
+/**
+*/
+export enum MetadataJsonSchema {
+  NoConversions,
+  BasicConversions,
+  DetailedSchema,
 }
 /**
 */
@@ -1027,19 +978,19 @@ export class ConstrPlutusData {
 */
   static from_bytes(bytes: Uint8Array): ConstrPlutusData;
 /**
-* @returns {BigNum}
+* @returns {Int}
 */
-  alternative(): BigNum;
+  tag(): Int;
 /**
 * @returns {PlutusList}
 */
   data(): PlutusList;
 /**
-* @param {BigNum} alternative
+* @param {Int} tag
 * @param {PlutusList} data
 * @returns {ConstrPlutusData}
 */
-  static new(alternative: BigNum, data: PlutusList): ConstrPlutusData;
+  static new(tag: Int, data: PlutusList): ConstrPlutusData;
 }
 /**
 */
@@ -1618,50 +1569,17 @@ export class Int {
 */
   is_positive(): boolean;
 /**
-* BigNum can only contain unsigned u64 values
-*
-* This function will return the BigNum representation
-* only in case the underlying i128 value is positive.
-*
-* Otherwise nothing will be returned (undefined).
 * @returns {BigNum | undefined}
 */
   as_positive(): BigNum | undefined;
 /**
-* BigNum can only contain unsigned u64 values
-*
-* This function will return the *absolute* BigNum representation
-* only in case the underlying i128 value is negative.
-*
-* Otherwise nothing will be returned (undefined).
 * @returns {BigNum | undefined}
 */
   as_negative(): BigNum | undefined;
 /**
-* !!! DEPRECATED !!!
-* Returns an i32 value in case the underlying original i128 value is within the limits.
-* Otherwise will just return an empty value (undefined).
 * @returns {number | undefined}
 */
   as_i32(): number | undefined;
-/**
-* Returns the underlying value converted to i32 if possible (within limits)
-* Otherwise will just return an empty value (undefined).
-* @returns {number | undefined}
-*/
-  as_i32_or_nothing(): number | undefined;
-/**
-* Returns the underlying value converted to i32 if possible (within limits)
-* JsError in case of out of boundary overflow
-* @returns {number}
-*/
-  as_i32_or_fail(): number;
-/**
-* Returns string representation of the underlying i128 value directly.
-* Might contain the minus sign (-) in case of negative value.
-* @returns {string}
-*/
-  to_str(): string;
 }
 /**
 */
@@ -1978,12 +1896,6 @@ export class Mint {
 */
   static new(): Mint;
 /**
-* @param {ScriptHash} key
-* @param {MintAssets} value
-* @returns {Mint}
-*/
-  static new_from_entry(key: ScriptHash, value: MintAssets): Mint;
-/**
 * @returns {number}
 */
   len(): number;
@@ -2002,16 +1914,6 @@ export class Mint {
 * @returns {ScriptHashes}
 */
   keys(): ScriptHashes;
-/**
-* Returns the multiasset where only positive (minting) entries are present
-* @returns {MultiAsset}
-*/
-  as_positive_multiasset(): MultiAsset;
-/**
-* Returns the multiasset where only negative (burning) entries are present
-* @returns {MultiAsset}
-*/
-  as_negative_multiasset(): MultiAsset;
 }
 /**
 */
@@ -2021,12 +1923,6 @@ export class MintAssets {
 * @returns {MintAssets}
 */
   static new(): MintAssets;
-/**
-* @param {AssetName} key
-* @param {Int} value
-* @returns {MintAssets}
-*/
-  static new_from_entry(key: AssetName, value: Int): MintAssets;
 /**
 * @returns {number}
 */
@@ -2130,48 +2026,26 @@ export class MultiAsset {
 */
   static new(): MultiAsset;
 /**
-* the number of unique policy IDs in the multiasset
 * @returns {number}
 */
   len(): number;
 /**
-* set (and replace if it exists) all assets with policy {policy_id} to a copy of {assets}
-* @param {ScriptHash} policy_id
-* @param {Assets} assets
+* @param {ScriptHash} key
+* @param {Assets} value
 * @returns {Assets | undefined}
 */
-  insert(policy_id: ScriptHash, assets: Assets): Assets | undefined;
+  insert(key: ScriptHash, value: Assets): Assets | undefined;
 /**
-* all assets under {policy_id}, if any exist, or else None (undefined in JS)
-* @param {ScriptHash} policy_id
+* @param {ScriptHash} key
 * @returns {Assets | undefined}
 */
-  get(policy_id: ScriptHash): Assets | undefined;
+  get(key: ScriptHash): Assets | undefined;
 /**
-* sets the asset {asset_name} to {value} under policy {policy_id}
-* returns the previous amount if it was set, or else None (undefined in JS)
-* @param {ScriptHash} policy_id
-* @param {AssetName} asset_name
-* @param {BigNum} value
-* @returns {BigNum | undefined}
-*/
-  set_asset(policy_id: ScriptHash, asset_name: AssetName, value: BigNum): BigNum | undefined;
-/**
-* returns the amount of asset {asset_name} under policy {policy_id}
-* If such an asset does not exist, 0 is returned.
-* @param {ScriptHash} policy_id
-* @param {AssetName} asset_name
-* @returns {BigNum}
-*/
-  get_asset(policy_id: ScriptHash, asset_name: AssetName): BigNum;
-/**
-* returns all policy IDs used by assets in this multiasset
 * @returns {ScriptHashes}
 */
   keys(): ScriptHashes;
 /**
 * removes an asset from the list if the result is 0 or less
-* does not modify this object, instead the result is returned
 * @param {MultiAsset} rhs_ma
 * @returns {MultiAsset}
 */
@@ -2215,9 +2089,9 @@ export class NativeScript {
   static from_bytes(bytes: Uint8Array): NativeScript;
 /**
 * @param {number} namespace
-* @returns {ScriptHash}
+* @returns {Ed25519KeyHash}
 */
-  hash(namespace: number): ScriptHash;
+  hash(namespace: number): Ed25519KeyHash;
 /**
 * @param {ScriptPubkey} script_pubkey
 * @returns {NativeScript}
@@ -2276,13 +2150,6 @@ export class NativeScript {
 * @returns {TimelockExpiry | undefined}
 */
   as_timelock_expiry(): TimelockExpiry | undefined;
-/**
-* Returns an array of unique Ed25519KeyHashes
-* contained within this script recursively on any depth level.
-* The order of the keys in the result is not determined in any way.
-* @returns {Ed25519KeyHashes}
-*/
-  get_required_signers(): Ed25519KeyHashes;
 }
 /**
 */
@@ -2569,20 +2436,11 @@ export class PlutusScript {
 */
   static from_bytes(bytes: Uint8Array): PlutusScript;
 /**
-*
-*     * Creates a new Plutus script from the RAW bytes of the compiled script.
-*     * This does NOT include any CBOR encoding around these bytes (e.g. from "cborBytes" in cardano-cli)
-*     * If you creating this from those you should use PlutusScript::from_bytes() instead.
-*     
 * @param {Uint8Array} bytes
 * @returns {PlutusScript}
 */
   static new(bytes: Uint8Array): PlutusScript;
 /**
-*
-*     * The raw bytes of this compiled Plutus script.
-*     * If you need "cborBytes" for cardano-cli use PlutusScript::to_bytes() instead.
-*     
 * @returns {Uint8Array}
 */
   bytes(): Uint8Array;
@@ -2854,19 +2712,6 @@ export class PrivateKey {
 */
   static generate_ed25519extended(): PrivateKey;
 /**
-* Get private key from its bech32 representation
-* ```javascript
-* PrivateKey.from_bech32(&#39;ed25519_sk1ahfetf02qwwg4dkq7mgp4a25lx5vh9920cr5wnxmpzz9906qvm8qwvlts0&#39;);
-* ```
-* For an extended 25519 key
-* ```javascript
-* PrivateKey.from_bech32(&#39;ed25519e_sk1gqwl4szuwwh6d0yk3nsqcc6xxc3fpvjlevgwvt60df59v8zd8f8prazt8ln3lmz096ux3xvhhvm3ca9wj2yctdh3pnw0szrma07rt5gl748fp&#39;);
-* ```
-* @param {string} bech32_str
-* @returns {PrivateKey}
-*/
-  static from_bech32(bech32_str: string): PrivateKey;
-/**
 * @returns {string}
 */
   to_bech32(): string;
@@ -3116,22 +2961,6 @@ export class ProtocolParamUpdate {
 * @returns {number | undefined}
 */
   max_value_size(): number | undefined;
-/**
-* @param {number} collateral_percentage
-*/
-  set_collateral_percentage(collateral_percentage: number): void;
-/**
-* @returns {number | undefined}
-*/
-  collateral_percentage(): number | undefined;
-/**
-* @param {number} max_collateral_inputs
-*/
-  set_max_collateral_inputs(max_collateral_inputs: number): void;
-/**
-* @returns {number | undefined}
-*/
-  max_collateral_inputs(): number | undefined;
 /**
 * @returns {ProtocolParamUpdate}
 */
@@ -3958,17 +3787,9 @@ export class Transaction {
 */
   witness_set(): TransactionWitnessSet;
 /**
-* @returns {boolean}
-*/
-  is_valid(): boolean;
-/**
 * @returns {AuxiliaryData | undefined}
 */
   auxiliary_data(): AuxiliaryData | undefined;
-/**
-* @param {boolean} valid
-*/
-  set_is_valid(valid: boolean): void;
 /**
 * @param {TransactionBody} body
 * @param {TransactionWitnessSet} witness_set
@@ -4084,12 +3905,6 @@ export class TransactionBody {
 /**
 * @returns {Mint | undefined}
 */
-  mint(): Mint | undefined;
-/**
-* This function returns the mint value of the transaction
-* Use `.mint()` instead.
-* @returns {Mint | undefined}
-*/
   multiassets(): Mint | undefined;
 /**
 * @param {ScriptDataHash} script_data_hash
@@ -4137,21 +3952,6 @@ export class TransactionBody {
 export class TransactionBuilder {
   free(): void;
 /**
-* This automatically selects and adds inputs from {inputs} consisting of just enough to cover
-* the outputs that have already been added.
-* This should be called after adding all certs/outputs/etc and will be an error otherwise.
-* Uses CIP2: https://github.com/cardano-foundation/CIPs/blob/master/CIP-0002/CIP-0002.md
-* Adding a change output must be called after via TransactionBuilder::add_change_if_needed()
-* This function, diverging from CIP2, takes into account fees and will attempt to add additional
-* inputs to cover the minimum fees. This does not, however, set the txbuilder's fee.
-* @param {TransactionUnspentOutputs} inputs
-* @param {number} strategy
-*/
-  add_inputs_from(inputs: TransactionUnspentOutputs, strategy: number): void;
-/**
-* We have to know what kind of inputs these are to know what kind of mock witnesses to create since
-* 1) mock witnesses have different lengths depending on the type which changes the expecting fee
-* 2) Witnesses are a set so we need to get rid of duplicates to avoid over-estimating the fee
 * @param {Ed25519KeyHash} hash
 * @param {TransactionInput} input
 * @param {Value} amount
@@ -4184,7 +3984,6 @@ export class TransactionBuilder {
 */
   fee_for_input(address: Address, input: TransactionInput, amount: Value): BigNum;
 /**
-* Add explicit output via a TransactionOutput object
 * @param {TransactionOutput} output
 */
   add_output(output: TransactionOutput): void;
@@ -4215,107 +4014,23 @@ export class TransactionBuilder {
 */
   set_withdrawals(withdrawals: Withdrawals): void;
 /**
-* @returns {AuxiliaryData | undefined}
-*/
-  get_auxiliary_data(): AuxiliaryData | undefined;
-/**
-* Set explicit auxiliary data via an AuxiliaryData object
-* It might contain some metadata plus native or Plutus scripts
 * @param {AuxiliaryData} auxiliary_data
 */
   set_auxiliary_data(auxiliary_data: AuxiliaryData): void;
 /**
-* Set metadata using a GeneralTransactionMetadata object
-* It will be set to the existing or new auxiliary data in this builder
-* @param {GeneralTransactionMetadata} metadata
+* @param {boolean} prefer_pure_change
 */
-  set_metadata(metadata: GeneralTransactionMetadata): void;
+  set_prefer_pure_change(prefer_pure_change: boolean): void;
 /**
-* Add a single metadatum using TransactionMetadatumLabel and TransactionMetadatum objects
-* It will be securely added to existing or new metadata in this builder
-* @param {BigNum} key
-* @param {TransactionMetadatum} val
-*/
-  add_metadatum(key: BigNum, val: TransactionMetadatum): void;
-/**
-* Add a single JSON metadatum using a TransactionMetadatumLabel and a String
-* It will be securely added to existing or new metadata in this builder
-* @param {BigNum} key
-* @param {string} val
-*/
-  add_json_metadatum(key: BigNum, val: string): void;
-/**
-* Add a single JSON metadatum using a TransactionMetadatumLabel, a String, and a MetadataJsonSchema object
-* It will be securely added to existing or new metadata in this builder
-* @param {BigNum} key
-* @param {string} val
-* @param {number} schema
-*/
-  add_json_metadatum_with_schema(key: BigNum, val: string, schema: number): void;
-/**
-* Set explicit Mint object and the required witnesses to this builder
-* it will replace any previously existing mint and mint scripts
-* NOTE! Error will be returned in case a mint policy does not have a matching script
-* @param {Mint} mint
-* @param {NativeScripts} mint_scripts
-*/
-  set_mint(mint: Mint, mint_scripts: NativeScripts): void;
-/**
-* Returns a copy of the current mint state in the builder
-* @returns {Mint | undefined}
-*/
-  get_mint(): Mint | undefined;
-/**
-* Returns a copy of the current mint witness scripts in the builder
-* @returns {NativeScripts | undefined}
-*/
-  get_mint_scripts(): NativeScripts | undefined;
-/**
-* Add a mint entry to this builder using a PolicyID and MintAssets object
-* It will be securely added to existing or new Mint in this builder
-* It will replace any existing mint assets with the same PolicyID
-* @param {NativeScript} policy_script
-* @param {MintAssets} mint_assets
-*/
-  set_mint_asset(policy_script: NativeScript, mint_assets: MintAssets): void;
-/**
-* Add a mint entry to this builder using a PolicyID, AssetName, and Int object for amount
-* It will be securely added to existing or new Mint in this builder
-* It will replace any previous existing amount same PolicyID and AssetName
-* @param {NativeScript} policy_script
-* @param {AssetName} asset_name
-* @param {Int} amount
-*/
-  add_mint_asset(policy_script: NativeScript, asset_name: AssetName, amount: Int): void;
-/**
-* Add a mint entry together with an output to this builder
-* Using a PolicyID, AssetName, Int for amount, Address, and Coin (BigNum) objects
-* The asset will be securely added to existing or new Mint in this builder
-* A new output will be added with the specified Address, the Coin value, and the minted asset
-* @param {NativeScript} policy_script
-* @param {AssetName} asset_name
-* @param {Int} amount
-* @param {TransactionOutputAmountBuilder} output_builder
-* @param {BigNum} output_coin
-*/
-  add_mint_asset_and_output(policy_script: NativeScript, asset_name: AssetName, amount: Int, output_builder: TransactionOutputAmountBuilder, output_coin: BigNum): void;
-/**
-* Add a mint entry together with an output to this builder
-* Using a PolicyID, AssetName, Int for amount, and Address objects
-* The asset will be securely added to existing or new Mint in this builder
-* A new output will be added with the specified Address and the minted asset
-* The output will be set to contain the minimum required amount of Coin
-* @param {NativeScript} policy_script
-* @param {AssetName} asset_name
-* @param {Int} amount
-* @param {TransactionOutputAmountBuilder} output_builder
-*/
-  add_mint_asset_and_output_min_required_coin(policy_script: NativeScript, asset_name: AssetName, amount: Int, output_builder: TransactionOutputAmountBuilder): void;
-/**
-* @param {TransactionBuilderConfig} cfg
+* @param {LinearFee} linear_fee
+* @param {BigNum} minimum_utxo_val
+* @param {BigNum} pool_deposit
+* @param {BigNum} key_deposit
+* @param {number} max_value_size
+* @param {number} max_tx_size
 * @returns {TransactionBuilder}
 */
-  static new(cfg: TransactionBuilderConfig): TransactionBuilder;
+  static new(linear_fee: LinearFee, minimum_utxo_val: BigNum, pool_deposit: BigNum, key_deposit: BigNum, max_value_size: number, max_tx_size: number): TransactionBuilder;
 /**
 * does not include refunds or withdrawals
 * @returns {Value}
@@ -4326,11 +4041,6 @@ export class TransactionBuilder {
 * @returns {Value}
 */
   get_implicit_input(): Value;
-/**
-* Return explicit input plus implicit input plus mint minus burn
-* @returns {Value}
-*/
-  get_total_input(): Value;
 /**
 * does not include fee
 * @returns {Value}
@@ -4346,9 +4056,6 @@ export class TransactionBuilder {
   get_fee_if_set(): BigNum | undefined;
 /**
 * Warning: this function will mutate the /fee/ field
-* Make sure to call this function last after setting all other tx-body properties
-* Editing inputs, outputs, mint, etc. after change been calculated
-* might cause a mismatch in calculated fee versus the required fee
 * @param {Address} address
 * @returns {boolean}
 */
@@ -4362,19 +4069,9 @@ export class TransactionBuilder {
 */
   output_sizes(): Uint32Array;
 /**
-* Returns object the body of the new transaction
-* Auxiliary data itself is not included
-* You can use `get_auxiliary_data` or `build_tx`
 * @returns {TransactionBody}
 */
   build(): TransactionBody;
-/**
-* Returns full Transaction object with the body and the auxiliary data
-* NOTE: witness_set will contain all mint_scripts if any been added or set
-* NOTE: is_valid set to true
-* @returns {Transaction}
-*/
-  build_tx(): Transaction;
 /**
 * warning: sum of all parts of a transaction must equal 0. You cannot just set the fee to the min value and forget about it
 * warning: min_fee may be slightly larger than the actual minimum fee (ex: a few lovelaces)
@@ -4382,59 +4079,6 @@ export class TransactionBuilder {
 * @returns {BigNum}
 */
   min_fee(): BigNum;
-}
-/**
-*/
-export class TransactionBuilderConfig {
-  free(): void;
-}
-/**
-*/
-export class TransactionBuilderConfigBuilder {
-  free(): void;
-/**
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  static new(): TransactionBuilderConfigBuilder;
-/**
-* @param {LinearFee} fee_algo
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  fee_algo(fee_algo: LinearFee): TransactionBuilderConfigBuilder;
-/**
-* @param {BigNum} coins_per_utxo_word
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  coins_per_utxo_word(coins_per_utxo_word: BigNum): TransactionBuilderConfigBuilder;
-/**
-* @param {BigNum} pool_deposit
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  pool_deposit(pool_deposit: BigNum): TransactionBuilderConfigBuilder;
-/**
-* @param {BigNum} key_deposit
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  key_deposit(key_deposit: BigNum): TransactionBuilderConfigBuilder;
-/**
-* @param {number} max_value_size
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  max_value_size(max_value_size: number): TransactionBuilderConfigBuilder;
-/**
-* @param {number} max_tx_size
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  max_tx_size(max_tx_size: number): TransactionBuilderConfigBuilder;
-/**
-* @param {boolean} prefer_pure_change
-* @returns {TransactionBuilderConfigBuilder}
-*/
-  prefer_pure_change(prefer_pure_change: boolean): TransactionBuilderConfigBuilder;
-/**
-* @returns {TransactionBuilderConfig}
-*/
-  build(): TransactionBuilderConfig;
 }
 /**
 */
@@ -4651,65 +4295,6 @@ export class TransactionOutput {
 }
 /**
 */
-export class TransactionOutputAmountBuilder {
-  free(): void;
-/**
-* @param {Value} amount
-* @returns {TransactionOutputAmountBuilder}
-*/
-  with_value(amount: Value): TransactionOutputAmountBuilder;
-/**
-* @param {BigNum} coin
-* @returns {TransactionOutputAmountBuilder}
-*/
-  with_coin(coin: BigNum): TransactionOutputAmountBuilder;
-/**
-* @param {BigNum} coin
-* @param {MultiAsset} multiasset
-* @returns {TransactionOutputAmountBuilder}
-*/
-  with_coin_and_asset(coin: BigNum, multiasset: MultiAsset): TransactionOutputAmountBuilder;
-/**
-* @param {MultiAsset} multiasset
-* @param {BigNum} coins_per_utxo_word
-* @returns {TransactionOutputAmountBuilder}
-*/
-  with_asset_and_min_required_coin(multiasset: MultiAsset, coins_per_utxo_word: BigNum): TransactionOutputAmountBuilder;
-/**
-* @returns {TransactionOutput}
-*/
-  build(): TransactionOutput;
-}
-/**
-* We introduce a builder-pattern format for creating transaction outputs
-* This is because:
-* 1. Some fields (i.e. data hash) are optional, and we can't easily expose Option<> in WASM
-* 2. Some fields like amounts have many ways it could be set (some depending on other field values being known)
-* 3. Easier to adapt as the output format gets more complicated in future Cardano releases
-*/
-export class TransactionOutputBuilder {
-  free(): void;
-/**
-* @returns {TransactionOutputBuilder}
-*/
-  static new(): TransactionOutputBuilder;
-/**
-* @param {Address} address
-* @returns {TransactionOutputBuilder}
-*/
-  with_address(address: Address): TransactionOutputBuilder;
-/**
-* @param {DataHash} data_hash
-* @returns {TransactionOutputBuilder}
-*/
-  with_data_hash(data_hash: DataHash): TransactionOutputBuilder;
-/**
-* @returns {TransactionOutputAmountBuilder}
-*/
-  next(): TransactionOutputAmountBuilder;
-}
-/**
-*/
 export class TransactionOutputs {
   free(): void;
 /**
@@ -4766,28 +4351,6 @@ export class TransactionUnspentOutput {
 * @returns {TransactionOutput}
 */
   output(): TransactionOutput;
-}
-/**
-*/
-export class TransactionUnspentOutputs {
-  free(): void;
-/**
-* @returns {TransactionUnspentOutputs}
-*/
-  static new(): TransactionUnspentOutputs;
-/**
-* @returns {number}
-*/
-  len(): number;
-/**
-* @param {number} index
-* @returns {TransactionUnspentOutput}
-*/
-  get(index: number): TransactionUnspentOutput;
-/**
-* @param {TransactionUnspentOutput} elem
-*/
-  add(elem: TransactionUnspentOutput): void;
 }
 /**
 */
@@ -5060,11 +4623,6 @@ export class Value {
 */
   static new(coin: BigNum): Value;
 /**
-* @param {MultiAsset} multiasset
-* @returns {Value}
-*/
-  static new_from_assets(multiasset: MultiAsset): Value;
-/**
 * @returns {Value}
 */
   static zero(): Value;
@@ -5258,9 +4816,7 @@ export interface InitOutput {
   readonly transaction_from_bytes: (a: number, b: number) => number;
   readonly transaction_body: (a: number) => number;
   readonly transaction_witness_set: (a: number) => number;
-  readonly transaction_is_valid: (a: number) => number;
   readonly transaction_auxiliary_data: (a: number) => number;
-  readonly transaction_set_is_valid: (a: number, b: number) => void;
   readonly transaction_new: (a: number, b: number, c: number) => number;
   readonly __wbg_transactioninputs_free: (a: number) => void;
   readonly transactioninputs_to_bytes: (a: number, b: number) => void;
@@ -5301,7 +4857,6 @@ export interface InitOutput {
   readonly transactionbody_set_validity_start_interval: (a: number, b: number) => void;
   readonly transactionbody_validity_start_interval: (a: number, b: number) => void;
   readonly transactionbody_set_mint: (a: number, b: number) => void;
-  readonly transactionbody_mint: (a: number) => number;
   readonly transactionbody_multiassets: (a: number) => number;
   readonly transactionbody_set_script_data_hash: (a: number, b: number) => void;
   readonly transactionbody_script_data_hash: (a: number) => number;
@@ -5572,7 +5127,6 @@ export interface InitOutput {
   readonly nativescript_as_script_n_of_k: (a: number) => number;
   readonly nativescript_as_timelock_start: (a: number) => number;
   readonly nativescript_as_timelock_expiry: (a: number) => number;
-  readonly nativescript_get_required_signers: (a: number) => number;
   readonly __wbg_nativescripts_free: (a: number) => void;
   readonly nativescripts_new: () => number;
   readonly nativescripts_len: (a: number) => number;
@@ -5666,10 +5220,6 @@ export interface InitOutput {
   readonly protocolparamupdate_max_block_ex_units: (a: number) => number;
   readonly protocolparamupdate_set_max_value_size: (a: number, b: number) => void;
   readonly protocolparamupdate_max_value_size: (a: number, b: number) => void;
-  readonly protocolparamupdate_set_collateral_percentage: (a: number, b: number) => void;
-  readonly protocolparamupdate_collateral_percentage: (a: number, b: number) => void;
-  readonly protocolparamupdate_set_max_collateral_inputs: (a: number, b: number) => void;
-  readonly protocolparamupdate_max_collateral_inputs: (a: number, b: number) => void;
   readonly protocolparamupdate_new: () => number;
   readonly __wbg_transactionbodies_free: (a: number) => void;
   readonly transactionbodies_to_bytes: (a: number, b: number) => void;
@@ -5756,13 +5306,10 @@ export interface InitOutput {
   readonly multiasset_len: (a: number) => number;
   readonly multiasset_insert: (a: number, b: number, c: number) => number;
   readonly multiasset_get: (a: number, b: number) => number;
-  readonly multiasset_set_asset: (a: number, b: number, c: number, d: number) => number;
-  readonly multiasset_get_asset: (a: number, b: number, c: number) => number;
   readonly multiasset_keys: (a: number) => number;
   readonly multiasset_sub: (a: number, b: number) => number;
   readonly __wbg_mintassets_free: (a: number) => void;
   readonly mintassets_new: () => number;
-  readonly mintassets_new_from_entry: (a: number, b: number) => number;
   readonly mintassets_len: (a: number) => number;
   readonly mintassets_insert: (a: number, b: number, c: number) => number;
   readonly mintassets_get: (a: number, b: number) => number;
@@ -5771,41 +5318,29 @@ export interface InitOutput {
   readonly mint_to_bytes: (a: number, b: number) => void;
   readonly mint_from_bytes: (a: number, b: number) => number;
   readonly mint_new: () => number;
-  readonly mint_new_from_entry: (a: number, b: number) => number;
   readonly mint_len: (a: number) => number;
   readonly mint_insert: (a: number, b: number, c: number) => number;
   readonly mint_get: (a: number, b: number) => number;
   readonly mint_keys: (a: number) => number;
-  readonly mint_as_positive_multiasset: (a: number) => number;
-  readonly mint_as_negative_multiasset: (a: number) => number;
   readonly __wbg_networkid_free: (a: number) => void;
   readonly networkid_to_bytes: (a: number, b: number) => void;
   readonly networkid_from_bytes: (a: number, b: number) => number;
   readonly networkid_testnet: () => number;
   readonly networkid_mainnet: () => number;
   readonly networkid_kind: (a: number) => number;
-  readonly __wbg_transactionoutputbuilder_free: (a: number) => void;
-  readonly transactionoutputbuilder_new: () => number;
-  readonly transactionoutputbuilder_with_address: (a: number, b: number) => number;
-  readonly transactionoutputbuilder_with_data_hash: (a: number, b: number) => number;
-  readonly transactionoutputbuilder_next: (a: number) => number;
-  readonly __wbg_transactionoutputamountbuilder_free: (a: number) => void;
-  readonly transactionoutputamountbuilder_with_value: (a: number, b: number) => number;
-  readonly transactionoutputamountbuilder_with_coin: (a: number, b: number) => number;
-  readonly transactionoutputamountbuilder_with_coin_and_asset: (a: number, b: number, c: number) => number;
-  readonly transactionoutputamountbuilder_with_asset_and_min_required_coin: (a: number, b: number, c: number) => number;
-  readonly transactionoutputamountbuilder_build: (a: number) => number;
+  readonly __wbg_linearfee_free: (a: number) => void;
+  readonly linearfee_constant: (a: number) => number;
+  readonly linearfee_coefficient: (a: number) => number;
+  readonly linearfee_new: (a: number, b: number) => number;
+  readonly min_fee: (a: number, b: number) => number;
+  readonly encrypt_with_password: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
+  readonly decrypt_with_password: (a: number, b: number, c: number, d: number, e: number) => void;
   readonly __wbg_transactionunspentoutput_free: (a: number) => void;
   readonly transactionunspentoutput_to_bytes: (a: number, b: number) => void;
   readonly transactionunspentoutput_from_bytes: (a: number, b: number) => number;
   readonly transactionunspentoutput_new: (a: number, b: number) => number;
   readonly transactionunspentoutput_input: (a: number) => number;
   readonly transactionunspentoutput_output: (a: number) => number;
-  readonly __wbg_transactionunspentoutputs_free: (a: number) => void;
-  readonly transactionunspentoutputs_new: () => number;
-  readonly transactionunspentoutputs_len: (a: number) => number;
-  readonly transactionunspentoutputs_get: (a: number, b: number) => number;
-  readonly transactionunspentoutputs_add: (a: number, b: number) => void;
   readonly __wbg_bignum_free: (a: number) => void;
   readonly bignum_to_bytes: (a: number, b: number) => void;
   readonly bignum_from_bytes: (a: number, b: number) => number;
@@ -5822,7 +5357,6 @@ export interface InitOutput {
   readonly value_to_bytes: (a: number, b: number) => void;
   readonly value_from_bytes: (a: number, b: number) => number;
   readonly value_new: (a: number) => number;
-  readonly value_new_from_assets: (a: number) => number;
   readonly value_zero: () => number;
   readonly value_is_zero: (a: number) => number;
   readonly value_coin: (a: number) => number;
@@ -5841,9 +5375,6 @@ export interface InitOutput {
   readonly int_as_positive: (a: number) => number;
   readonly int_as_negative: (a: number) => number;
   readonly int_as_i32: (a: number, b: number) => void;
-  readonly int_as_i32_or_nothing: (a: number, b: number) => void;
-  readonly int_as_i32_or_fail: (a: number) => number;
-  readonly int_to_str: (a: number, b: number) => void;
   readonly __wbg_bigint_free: (a: number) => void;
   readonly bigint_to_bytes: (a: number, b: number) => void;
   readonly bigint_from_bytes: (a: number, b: number) => number;
@@ -5859,78 +5390,33 @@ export interface InitOutput {
   readonly hash_script_data: (a: number, b: number, c: number) => number;
   readonly get_implicit_input: (a: number, b: number, c: number) => number;
   readonly get_deposit: (a: number, b: number, c: number) => number;
-  readonly min_ada_required: (a: number, b: number, c: number) => number;
-  readonly encode_json_str_to_native_script: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly __wbg_metadatamap_free: (a: number) => void;
-  readonly metadatamap_to_bytes: (a: number, b: number) => void;
-  readonly metadatamap_from_bytes: (a: number, b: number) => number;
-  readonly metadatamap_new: () => number;
-  readonly metadatamap_len: (a: number) => number;
-  readonly metadatamap_insert: (a: number, b: number, c: number) => number;
-  readonly metadatamap_insert_str: (a: number, b: number, c: number, d: number) => number;
-  readonly metadatamap_insert_i32: (a: number, b: number, c: number) => number;
-  readonly metadatamap_get: (a: number, b: number) => number;
-  readonly metadatamap_get_str: (a: number, b: number, c: number) => number;
-  readonly metadatamap_get_i32: (a: number, b: number) => number;
-  readonly metadatamap_has: (a: number, b: number) => number;
-  readonly metadatamap_keys: (a: number) => number;
-  readonly __wbg_metadatalist_free: (a: number) => void;
-  readonly metadatalist_to_bytes: (a: number, b: number) => void;
-  readonly metadatalist_from_bytes: (a: number, b: number) => number;
-  readonly metadatalist_new: () => number;
-  readonly metadatalist_len: (a: number) => number;
-  readonly metadatalist_get: (a: number, b: number) => number;
-  readonly metadatalist_add: (a: number, b: number) => void;
-  readonly __wbg_transactionmetadatum_free: (a: number) => void;
-  readonly transactionmetadatum_to_bytes: (a: number, b: number) => void;
-  readonly transactionmetadatum_from_bytes: (a: number, b: number) => number;
-  readonly transactionmetadatum_new_map: (a: number) => number;
-  readonly transactionmetadatum_new_list: (a: number) => number;
-  readonly transactionmetadatum_new_int: (a: number) => number;
-  readonly transactionmetadatum_new_bytes: (a: number, b: number) => number;
-  readonly transactionmetadatum_new_text: (a: number, b: number) => number;
-  readonly transactionmetadatum_kind: (a: number) => number;
-  readonly transactionmetadatum_as_map: (a: number) => number;
-  readonly transactionmetadatum_as_list: (a: number) => number;
-  readonly transactionmetadatum_as_int: (a: number) => number;
-  readonly transactionmetadatum_as_bytes: (a: number, b: number) => void;
-  readonly transactionmetadatum_as_text: (a: number, b: number) => void;
-  readonly __wbg_transactionmetadatumlabels_free: (a: number) => void;
-  readonly transactionmetadatumlabels_to_bytes: (a: number, b: number) => void;
-  readonly transactionmetadatumlabels_from_bytes: (a: number, b: number) => number;
-  readonly transactionmetadatumlabels_new: () => number;
-  readonly transactionmetadatumlabels_len: (a: number) => number;
-  readonly transactionmetadatumlabels_get: (a: number, b: number) => number;
-  readonly transactionmetadatumlabels_add: (a: number, b: number) => void;
-  readonly __wbg_generaltransactionmetadata_free: (a: number) => void;
-  readonly generaltransactionmetadata_to_bytes: (a: number, b: number) => void;
-  readonly generaltransactionmetadata_from_bytes: (a: number, b: number) => number;
-  readonly generaltransactionmetadata_new: () => number;
-  readonly generaltransactionmetadata_len: (a: number) => number;
-  readonly generaltransactionmetadata_insert: (a: number, b: number, c: number) => number;
-  readonly generaltransactionmetadata_get: (a: number, b: number) => number;
-  readonly generaltransactionmetadata_keys: (a: number) => number;
-  readonly __wbg_auxiliarydata_free: (a: number) => void;
-  readonly auxiliarydata_to_bytes: (a: number, b: number) => void;
-  readonly auxiliarydata_from_bytes: (a: number, b: number) => number;
-  readonly auxiliarydata_new: () => number;
-  readonly auxiliarydata_metadata: (a: number) => number;
-  readonly auxiliarydata_set_metadata: (a: number, b: number) => void;
-  readonly auxiliarydata_native_scripts: (a: number) => number;
-  readonly auxiliarydata_set_native_scripts: (a: number, b: number) => void;
-  readonly auxiliarydata_plutus_scripts: (a: number) => number;
-  readonly auxiliarydata_set_plutus_scripts: (a: number, b: number) => void;
-  readonly encode_arbitrary_bytes_as_metadatum: (a: number, b: number) => number;
-  readonly decode_arbitrary_bytes_from_metadatum: (a: number, b: number) => void;
-  readonly encode_json_str_to_metadatum: (a: number, b: number, c: number) => number;
-  readonly decode_metadatum_to_json_str: (a: number, b: number, c: number) => void;
-  readonly __wbg_linearfee_free: (a: number) => void;
-  readonly linearfee_constant: (a: number) => number;
-  readonly linearfee_coefficient: (a: number) => number;
-  readonly linearfee_new: (a: number, b: number) => number;
-  readonly min_fee: (a: number, b: number) => number;
-  readonly encrypt_with_password: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
-  readonly decrypt_with_password: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly min_ada_required: (a: number, b: number) => number;
+  readonly __wbg_transactionbuilder_free: (a: number) => void;
+  readonly transactionbuilder_add_key_input: (a: number, b: number, c: number, d: number) => void;
+  readonly transactionbuilder_add_script_input: (a: number, b: number, c: number, d: number) => void;
+  readonly transactionbuilder_add_bootstrap_input: (a: number, b: number, c: number, d: number) => void;
+  readonly transactionbuilder_add_input: (a: number, b: number, c: number, d: number) => void;
+  readonly transactionbuilder_fee_for_input: (a: number, b: number, c: number, d: number) => number;
+  readonly transactionbuilder_add_output: (a: number, b: number) => void;
+  readonly transactionbuilder_fee_for_output: (a: number, b: number) => number;
+  readonly transactionbuilder_set_fee: (a: number, b: number) => void;
+  readonly transactionbuilder_set_ttl: (a: number, b: number) => void;
+  readonly transactionbuilder_set_validity_start_interval: (a: number, b: number) => void;
+  readonly transactionbuilder_set_certs: (a: number, b: number) => void;
+  readonly transactionbuilder_set_withdrawals: (a: number, b: number) => void;
+  readonly transactionbuilder_set_auxiliary_data: (a: number, b: number) => void;
+  readonly transactionbuilder_set_prefer_pure_change: (a: number, b: number) => void;
+  readonly transactionbuilder_new: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
+  readonly transactionbuilder_get_explicit_input: (a: number) => number;
+  readonly transactionbuilder_get_implicit_input: (a: number) => number;
+  readonly transactionbuilder_get_explicit_output: (a: number) => number;
+  readonly transactionbuilder_get_deposit: (a: number) => number;
+  readonly transactionbuilder_get_fee_if_set: (a: number) => number;
+  readonly transactionbuilder_add_change_if_needed: (a: number, b: number) => number;
+  readonly transactionbuilder_full_size: (a: number) => number;
+  readonly transactionbuilder_output_sizes: (a: number, b: number) => void;
+  readonly transactionbuilder_build: (a: number) => number;
+  readonly transactionbuilder_min_fee: (a: number) => number;
   readonly __wbg_bip32privatekey_free: (a: number) => void;
   readonly bip32privatekey_derive: (a: number, b: number) => number;
   readonly bip32privatekey_from_128_xprv: (a: number, b: number) => number;
@@ -5956,7 +5442,6 @@ export interface InitOutput {
   readonly privatekey_to_public: (a: number) => number;
   readonly privatekey_generate_ed25519: () => number;
   readonly privatekey_generate_ed25519extended: () => number;
-  readonly privatekey_from_bech32: (a: number, b: number) => number;
   readonly privatekey_to_bech32: (a: number, b: number) => void;
   readonly privatekey_as_bytes: (a: number, b: number) => void;
   readonly privatekey_from_extended_bytes: (a: number, b: number) => number;
@@ -6099,57 +5584,6 @@ export interface InitOutput {
   readonly vrfcert_output: (a: number, b: number) => void;
   readonly vrfcert_proof: (a: number, b: number) => void;
   readonly vrfcert_new: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbg_transactionbuilderconfig_free: (a: number) => void;
-  readonly __wbg_transactionbuilderconfigbuilder_free: (a: number) => void;
-  readonly transactionbuilderconfigbuilder_new: () => number;
-  readonly transactionbuilderconfigbuilder_fee_algo: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_coins_per_utxo_word: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_pool_deposit: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_key_deposit: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_max_value_size: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_max_tx_size: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_prefer_pure_change: (a: number, b: number) => number;
-  readonly transactionbuilderconfigbuilder_build: (a: number) => number;
-  readonly __wbg_transactionbuilder_free: (a: number) => void;
-  readonly transactionbuilder_add_inputs_from: (a: number, b: number, c: number) => void;
-  readonly transactionbuilder_add_key_input: (a: number, b: number, c: number, d: number) => void;
-  readonly transactionbuilder_add_script_input: (a: number, b: number, c: number, d: number) => void;
-  readonly transactionbuilder_add_bootstrap_input: (a: number, b: number, c: number, d: number) => void;
-  readonly transactionbuilder_add_input: (a: number, b: number, c: number, d: number) => void;
-  readonly transactionbuilder_fee_for_input: (a: number, b: number, c: number, d: number) => number;
-  readonly transactionbuilder_add_output: (a: number, b: number) => void;
-  readonly transactionbuilder_fee_for_output: (a: number, b: number) => number;
-  readonly transactionbuilder_set_fee: (a: number, b: number) => void;
-  readonly transactionbuilder_set_ttl: (a: number, b: number) => void;
-  readonly transactionbuilder_set_validity_start_interval: (a: number, b: number) => void;
-  readonly transactionbuilder_set_certs: (a: number, b: number) => void;
-  readonly transactionbuilder_set_withdrawals: (a: number, b: number) => void;
-  readonly transactionbuilder_get_auxiliary_data: (a: number) => number;
-  readonly transactionbuilder_set_auxiliary_data: (a: number, b: number) => void;
-  readonly transactionbuilder_set_metadata: (a: number, b: number) => void;
-  readonly transactionbuilder_add_metadatum: (a: number, b: number, c: number) => void;
-  readonly transactionbuilder_add_json_metadatum: (a: number, b: number, c: number, d: number) => void;
-  readonly transactionbuilder_add_json_metadatum_with_schema: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly transactionbuilder_set_mint: (a: number, b: number, c: number) => void;
-  readonly transactionbuilder_get_mint: (a: number) => number;
-  readonly transactionbuilder_get_mint_scripts: (a: number) => number;
-  readonly transactionbuilder_set_mint_asset: (a: number, b: number, c: number) => void;
-  readonly transactionbuilder_add_mint_asset: (a: number, b: number, c: number, d: number) => void;
-  readonly transactionbuilder_add_mint_asset_and_output: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly transactionbuilder_add_mint_asset_and_output_min_required_coin: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly transactionbuilder_new: (a: number) => number;
-  readonly transactionbuilder_get_explicit_input: (a: number) => number;
-  readonly transactionbuilder_get_implicit_input: (a: number) => number;
-  readonly transactionbuilder_get_total_input: (a: number) => number;
-  readonly transactionbuilder_get_explicit_output: (a: number) => number;
-  readonly transactionbuilder_get_deposit: (a: number) => number;
-  readonly transactionbuilder_get_fee_if_set: (a: number) => number;
-  readonly transactionbuilder_add_change_if_needed: (a: number, b: number) => number;
-  readonly transactionbuilder_full_size: (a: number) => number;
-  readonly transactionbuilder_output_sizes: (a: number, b: number) => void;
-  readonly transactionbuilder_build: (a: number) => number;
-  readonly transactionbuilder_build_tx: (a: number) => number;
-  readonly transactionbuilder_min_fee: (a: number) => number;
   readonly __wbg_networkinfo_free: (a: number) => void;
   readonly networkinfo_new: (a: number, b: number) => number;
   readonly networkinfo_network_id: (a: number) => number;
@@ -6224,7 +5658,7 @@ export interface InitOutput {
   readonly __wbg_constrplutusdata_free: (a: number) => void;
   readonly constrplutusdata_to_bytes: (a: number, b: number) => void;
   readonly constrplutusdata_from_bytes: (a: number, b: number) => number;
-  readonly constrplutusdata_alternative: (a: number) => number;
+  readonly constrplutusdata_tag: (a: number) => number;
   readonly constrplutusdata_data: (a: number) => number;
   readonly constrplutusdata_new: (a: number, b: number) => number;
   readonly __wbg_costmodel_free: (a: number) => void;
@@ -6320,11 +5754,73 @@ export interface InitOutput {
   readonly strings_len: (a: number) => number;
   readonly strings_get: (a: number, b: number, c: number) => void;
   readonly strings_add: (a: number, b: number, c: number) => void;
+  readonly __wbg_metadatamap_free: (a: number) => void;
+  readonly metadatamap_to_bytes: (a: number, b: number) => void;
+  readonly metadatamap_from_bytes: (a: number, b: number) => number;
+  readonly metadatamap_new: () => number;
+  readonly metadatamap_len: (a: number) => number;
+  readonly metadatamap_insert: (a: number, b: number, c: number) => number;
+  readonly metadatamap_insert_str: (a: number, b: number, c: number, d: number) => number;
+  readonly metadatamap_insert_i32: (a: number, b: number, c: number) => number;
+  readonly metadatamap_get: (a: number, b: number) => number;
+  readonly metadatamap_get_str: (a: number, b: number, c: number) => number;
+  readonly metadatamap_get_i32: (a: number, b: number) => number;
+  readonly metadatamap_has: (a: number, b: number) => number;
+  readonly metadatamap_keys: (a: number) => number;
+  readonly __wbg_metadatalist_free: (a: number) => void;
+  readonly metadatalist_to_bytes: (a: number, b: number) => void;
+  readonly metadatalist_from_bytes: (a: number, b: number) => number;
+  readonly metadatalist_new: () => number;
+  readonly metadatalist_len: (a: number) => number;
+  readonly metadatalist_get: (a: number, b: number) => number;
+  readonly metadatalist_add: (a: number, b: number) => void;
+  readonly __wbg_transactionmetadatum_free: (a: number) => void;
+  readonly transactionmetadatum_to_bytes: (a: number, b: number) => void;
+  readonly transactionmetadatum_from_bytes: (a: number, b: number) => number;
+  readonly transactionmetadatum_new_map: (a: number) => number;
+  readonly transactionmetadatum_new_list: (a: number) => number;
+  readonly transactionmetadatum_new_int: (a: number) => number;
+  readonly transactionmetadatum_new_bytes: (a: number, b: number) => number;
+  readonly transactionmetadatum_new_text: (a: number, b: number) => number;
+  readonly transactionmetadatum_kind: (a: number) => number;
+  readonly transactionmetadatum_as_map: (a: number) => number;
+  readonly transactionmetadatum_as_list: (a: number) => number;
+  readonly transactionmetadatum_as_int: (a: number) => number;
+  readonly transactionmetadatum_as_bytes: (a: number, b: number) => void;
+  readonly transactionmetadatum_as_text: (a: number, b: number) => void;
+  readonly __wbg_transactionmetadatumlabels_free: (a: number) => void;
+  readonly transactionmetadatumlabels_to_bytes: (a: number, b: number) => void;
+  readonly transactionmetadatumlabels_from_bytes: (a: number, b: number) => number;
+  readonly transactionmetadatumlabels_new: () => number;
+  readonly transactionmetadatumlabels_len: (a: number) => number;
+  readonly transactionmetadatumlabels_get: (a: number, b: number) => number;
+  readonly transactionmetadatumlabels_add: (a: number, b: number) => void;
+  readonly __wbg_generaltransactionmetadata_free: (a: number) => void;
+  readonly generaltransactionmetadata_to_bytes: (a: number, b: number) => void;
+  readonly generaltransactionmetadata_from_bytes: (a: number, b: number) => number;
+  readonly generaltransactionmetadata_new: () => number;
+  readonly generaltransactionmetadata_len: (a: number) => number;
+  readonly generaltransactionmetadata_insert: (a: number, b: number, c: number) => number;
+  readonly generaltransactionmetadata_get: (a: number, b: number) => number;
+  readonly generaltransactionmetadata_keys: (a: number) => number;
+  readonly __wbg_auxiliarydata_free: (a: number) => void;
+  readonly auxiliarydata_to_bytes: (a: number, b: number) => void;
+  readonly auxiliarydata_from_bytes: (a: number, b: number) => number;
+  readonly auxiliarydata_new: () => number;
+  readonly auxiliarydata_metadata: (a: number) => number;
+  readonly auxiliarydata_set_metadata: (a: number, b: number) => void;
+  readonly auxiliarydata_native_scripts: (a: number) => number;
+  readonly auxiliarydata_set_native_scripts: (a: number, b: number) => void;
+  readonly auxiliarydata_plutus_scripts: (a: number) => number;
+  readonly auxiliarydata_set_plutus_scripts: (a: number, b: number) => void;
+  readonly encode_arbitrary_bytes_as_metadatum: (a: number, b: number) => number;
+  readonly decode_arbitrary_bytes_from_metadatum: (a: number, b: number) => void;
+  readonly encode_json_str_to_metadatum: (a: number, b: number, c: number) => number;
+  readonly decode_metadatum_to_json_str: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number) => void;
-  readonly __wbindgen_exn_store: (a: number) => void;
 }
 
 /**

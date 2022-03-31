@@ -75,29 +75,29 @@ public class ProtocolParametersService {
         log.debug("Getting from Canned: "+form.getNetwork());
         BFProtocolParametersResponse resultObj = new BFProtocolParametersResponse();
         if (form.getNetwork().equals(Helpers.TESTNET_ID)) {
-            resultObj.setEpoch(new Long(166));
+            resultObj.setEpoch(166L);
             resultObj.setMin_fee_a(44.0);
             resultObj.setMin_fee_b(155381.0);
-            resultObj.setMax_block_size(new Long(65536));
-            resultObj.setMax_tx_size(new Long(16384));
+            resultObj.setMax_block_size(65536L);
+            resultObj.setMax_tx_size(16384L);
             resultObj.setKey_deposit(2000000.0);
             resultObj.setPool_deposit(500000000.0);
             resultObj.setMax_val_size(5000.0);
             resultObj.setMin_utxo(1000000.0);
-            resultObj.setLatest_slot(new Long(412162133)); // this is dynamic, should be set prior to tests
+            resultObj.setLatest_slot(null); // this is dynamic, should be set prior to tests, or will work without
             return resultObj;
         }
         else if (form.getNetwork().equals(Helpers.MAINNET_ID)) {
-            resultObj.setEpoch(new Long(300));
+            resultObj.setEpoch(300L);
             resultObj.setMin_fee_a(44.0);
             resultObj.setMin_fee_b(155381.0);
-            resultObj.setMax_block_size(new Long(65536));
-            resultObj.setMax_tx_size(new Long(16384));
+            resultObj.setMax_block_size(65536L);
+            resultObj.setMax_tx_size(16384L);
             resultObj.setKey_deposit(2000000.0);
             resultObj.setPool_deposit(500000000.0);
             resultObj.setMax_val_size(5000.0);
             resultObj.setMin_utxo(1000000.0);
-            resultObj.setLatest_slot(new Long(412162133)); // this is dynamic, should be set prior to tests
+            resultObj.setLatest_slot(412162133L); // this is dynamic, should be set prior to tests
             return resultObj;
         }
         return null;

@@ -56,6 +56,10 @@ public class BlockfrostService {
 
     /* API Ref: https://docs.blockfrost.io/#tag/Cardano-Epochs/paths/~1epochs~1latest~1parameters/get */
     public BFProtocolParametersResponse getProtocolParamsFromBlockfrost(ProtocolParametersRequestForm form) throws Exception {
+        // IN case no BLOCKFROST TESTNET Key, can still test app using some defaults
+        if (form.getNetwork().equals(Helpers.TESTNET_ID)) {
+            return buildCannedTestnetProtocolParams();
+        }
         String url;
         HttpGet get = null;
         if (form.getNetwork().equals(Helpers.TESTNET_ID)) {
@@ -81,5 +85,20 @@ public class BlockfrostService {
             resultObj.setLatest_slot(latestBlock.getSlot());
         }
         return resultObj;
+    }
+
+    public BFProtocolParametersResponse buildCannedTestnetProtocolParams() {
+        BFProtocolParametersResponse response = new BFProtocolParametersResponse();
+        response.setMin_fee_a(44.0);
+        response.setMin_fee_b(155381.0);
+        response.setMin_utxo(34482.0);
+        response.setKey_deposit(2000000.0);
+        response.setPool_deposit(500000000.0);
+        response.setMax_val_size(5000.0);
+        response.setMax_tx_size(16384L);
+        response.setPrice_mem(0.0577);
+        response.setPrice_step(0.0000721);
+        response.setCoins_per_utxo_word(34482.0);
+        return response;
     }
 }

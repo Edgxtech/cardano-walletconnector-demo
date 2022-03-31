@@ -10,16 +10,21 @@
 
         <section>
             <header>
-                <h3>Minimal Spring Application with <a href="https://namiwallet.io">Nami</a> Cardano Wallet Integration</h3>
+                <h3>Minimal Spring Application with <a href="https://namiwallet.io">Nami</a> / <a href="https://ccvault.io">Eternl</a> Cardano Wallet Integration</h3>
             </header>
         </section>
 
-        <form id="connectForm" class="form-horizontal connectNami" th:action="@{/dappconn/delegator/connect}" method="post">
+        <form class="form-horizontal connect" th:action="@{/dappconn/delegator/connect}" method="post">
             <fieldset>
                 <legend>Connect Wallet</legend>
                 <div class="form-group">
                     <div class="col-md-4">
-                        <button id="submit_connect" name="submit" class="btn btn-primary">Connect</button>
+                        <select name="walletName">
+                            <option value="eternl">Eternl</option>
+                            <option value="nami">Nami</option>
+                        </select>
+                        <button id="submit_connect" name="submit" class="btn btn-primary">Connect/Resyc</button>
+                        <div class="alert alert-info">*Resync after any network / account change</div>
                     </div>
                     <div class="col-md-4">
                         <strong>Payment Address: </strong><small><em id="payment_addr"></em></small><br/>
