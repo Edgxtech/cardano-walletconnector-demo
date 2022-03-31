@@ -7,7 +7,8 @@ Minimal Spring Java application that demonstrates integration with the Nami Card
 1. Navigate to project root
 2. mvn clean install
 3. mvn spring-boot:run
-4. 'Connect' -> Approve connection in Nami Wallet
+4. 'Connect' -> Approve connection in Nami/Eternl Wallet
+5. Use the 'Send ADA' form to sign transactions using connected wallet
 
 # Prereqs
 1. Install Nami Wallet (https://namiwallet.io)
