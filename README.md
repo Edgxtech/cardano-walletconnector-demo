@@ -17,6 +17,7 @@ Minimal Spring Java application that demonstrates integration with the Nami Card
 blockfrost.cardano.testnet.project.id=<insert output of EncryptionUtil.encrypt("Blockfrost testnet project_id")>
 blockfrost.cardano.mainnet.project.id=<insert output of EncryptionUtil.encrypt("Blockfrost mainnet project_id")>
 ```
+(optional) adding blockfrost api keys / project id are if you are using mainnet or wanting to use testnet with your own api key 'instead' of provided defaults
 
 # Simple Funds Transfer Form - Inputs
 ```
