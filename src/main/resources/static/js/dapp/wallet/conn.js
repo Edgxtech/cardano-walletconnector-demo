@@ -211,15 +211,7 @@ $(document).on("submit","form.sendFunds", function(e) {
 
             // calculate the min fee required and send any change back to my address
             txBuilder.add_change_if_needed(CardanoSerialisationWasm.Address.from_bech32(walletConnection.change_addr)); // change_addr_b32
-//            try {
-//                 txBuilder.add_change_if_needed(CardanoSerialisationWasm.Address.from_bech32(walletConnection.change_addr)); // change_addr_b32
-//            } catch (err) {
-//                // Not enough ADA leftover to include non-ADA assets in a change address
-//                $("textarea#console").append('Invalid Transaction, something is wrong such as using mainnet and sending to testnet address\n');
-//                reportError(err);
-//                throw ERROR.invalidTransaction;
-//            }
-
+            
             var txBody = txBuilder.build();
 
             // Create Transaction using an empty witness set
