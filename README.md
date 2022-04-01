@@ -1,7 +1,7 @@
 # cardano-walletconnector-demo
 
 # Description
-Minimal Spring Java application that demonstrates integration with the Nami Cardano Wallet. Connects to wallet, builds transaction and seeks user signing to authorise transaction.
+Minimal Spring Java application that demonstrates integration with the Nami/Eternl Cardano Wallet(s). Connects to wallet, builds transaction and seeks user signing to authorise transaction.
 
 # Quick Start
 1. Navigate to project root
