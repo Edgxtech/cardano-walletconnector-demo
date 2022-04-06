@@ -1,7 +1,7 @@
 package au.com.ausstaker.cardano_dappconn_test.util;
 
 /**
- * @author edge2ipi (https://github.com/Ausstaker)
+ * @author ausstaker (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 public class Helpers {

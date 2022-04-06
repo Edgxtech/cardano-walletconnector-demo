@@ -8,7 +8,7 @@ import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
 /**
- * @author edge2ipi (https://github.com/Ausstaker)
+ * @author ausstaker (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 @Component("protocolParametersValidator")

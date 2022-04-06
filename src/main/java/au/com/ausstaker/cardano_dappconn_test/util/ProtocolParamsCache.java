@@ -4,7 +4,7 @@ import au.com.ausstaker.cardano_dappconn_test.model.BFProtocolParametersResponse
 import java.util.Date;
 
 /**
- * @author edge2ipi (https://github.com/Ausstaker)
+ * @author ausstaker (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 public class ProtocolParamsCache {

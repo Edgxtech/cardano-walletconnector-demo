@@ -16,7 +16,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author edge2ipi (https://github.com/Ausstaker)
+ * @author ausstaker (https://github.com/Ausstaker)
  * @since Nov 2021
  */
 @Controller

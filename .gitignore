@@ -5,4 +5,4 @@ encrypted.properties
 TIPS.txt
 TODO.txt
 unused/
-src/test/java/EncryptionUtilsTest.java
+src/test/java/au.com.ausstaker.cardano_dappconn_test.test.EncryptionUtilsTest.java
