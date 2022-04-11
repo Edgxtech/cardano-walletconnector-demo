@@ -11,7 +11,7 @@ Minimal Spring Java application that demonstrates integration with the Nami & Et
 5. Use the 'Send ADA' form to sign transactions using connected wallet
 
 # Prereqs
-1. Install Nami Wallet (https://namiwallet.io)
+1. Install Eternl (https://ccvault.io) and/or Nami Wallet (https://namiwallet.io)
 2. Create a Cardano wallet and deposit ADA (mainnet) or testADA (testnet)
 3. Add a file 'encrypted.properties' to classpath (src/main/resources/)
 ```
