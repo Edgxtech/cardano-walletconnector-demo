@@ -61,6 +61,24 @@
             </fieldset>
         </form>
 
+        <form class="form-horizontal signData" method="post">
+            <fieldset>
+                <legend>Sign Data</legend>
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="message">Message to Sign</label>
+                    <div class="col-md-4">
+                        <input id="message" name="message" type="text" placeholder="message..." class="form-control input-md" required="" value="abcde"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 control-label" for="submit_send"></label>
+                    <div class="col-md-4">
+                        <button id="submit_send" name="submit" class="btn btn-primary">Sign</button>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+
         <textarea rows="25" cols="75" id="console" readonly="true">OUTPUT:</textarea>
 
         <section>
