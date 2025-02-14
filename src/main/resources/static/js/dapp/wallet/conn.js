@@ -30,12 +30,12 @@ let cardanoAPI = undefined;
 function initDapp(walletName){
     const enableDappconnPromise = new Promise((resolve, reject) => {
         let wallet = undefined;
-        if (walletName === "nami") {
-            console.log("Connecting nami");
-            wallet = window.cardano.nami;
+        if (walletName === "vespr") {
+            console.log("Connecting vespr");
+            wallet = window.cardano.vespr;
         } else if (walletName === "eternl") {
             console.log("Connecting eternl");
-            wallet = window.cardano.ccvault;
+            wallet = window.cardano.eternl;
         }
         wallet.enable().then(function(api) {
             if(!api){
